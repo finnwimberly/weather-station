@@ -381,7 +381,7 @@ def _draw_weather_chart(draw, img, hourly_data, fonts):
     # ── ACeP-safe colours ────────────────────────────────────────────────
     c_amber = (200/255,  0/255,  0/255)
     c_navy  = (15/255,  55/255, 120/255)
-    c_cloud = (160/255, 200/255, 240/255)   # light blue → dithers as sparse blue
+    c_cloud = (0/255, 170/255, 80/255)       # green → renders cleanly on ACeP e-ink
 
     fig = plt.figure(figsize=(w / dpi, h / dpi), dpi=dpi)
     fig.patch.set_facecolor("white")
@@ -400,7 +400,7 @@ def _draw_weather_chart(draw, img, hourly_data, fonts):
     t_min, t_max = min(temps), max(temps)
     pad = max((t_max - t_min) * 0.18, 3.0)
     ax_t.set_ylim(t_min - pad, t_max + pad)
-    ax_t.set_ylabel("°F", fontsize=9, fontweight="bold", labelpad=2)
+    ax_t.set_ylabel("°F", fontsize=10, fontweight="bold", labelpad=2)
     ax_t.tick_params(axis="y", labelsize=9, pad=1, length=2)
     ax_t.tick_params(axis="x", bottom=False, labelbottom=False)
     ax_t.spines["top"].set_visible(False)
@@ -414,7 +414,7 @@ def _draw_weather_chart(draw, img, hourly_data, fonts):
     ax_b.fill_between(t_nums, precips, 0, color=c_navy, alpha=1.0, label="Precip %")
     ax_b.set_ylim(0, 108)
     ax_b.set_xlim(t_nums[0], t_nums[-1])
-    ax_b.set_ylabel("%", fontsize=9, fontweight="bold", labelpad=2)
+    ax_b.set_ylabel("%", fontsize=10, fontweight="bold", labelpad=2)
     ax_b.tick_params(axis="y", labelsize=9, pad=1, length=2)
     # Pressure on right y-axis
     ax_p = ax_b.twinx()
@@ -424,8 +424,8 @@ def _draw_weather_chart(draw, img, hourly_data, fonts):
         spread = max(max(p_vals) - min(p_vals), 0.2)
         ax_p.set_ylim(min(p_vals) - spread * 0.4,
                       max(p_vals) + spread * 0.4)
-    ax_p.set_ylabel("inHg", fontsize=8, labelpad=2)
-    ax_p.tick_params(axis="y", labelsize=8, pad=1, length=2)
+    ax_p.set_ylabel("inHg", fontsize=10, fontweight="bold", labelpad=2)
+    ax_p.tick_params(axis="y", labelsize=9, pad=1, length=2)
     ax_p.spines["top"].set_visible(False)
 
     # X-axis time labels — day boundaries for 3-day span, 12h minor ticks
@@ -450,6 +450,10 @@ def _draw_weather_chart(draw, img, hourly_data, fonts):
                 framealpha=0.85, ncol=3,
                 borderpad=0.5, handlelength=1.8,
                 handletextpad=0.5, columnspacing=1.5)
+
+    # Pin both left ylabels to the same x so "100" ticks don't push % further left than °F
+    ax_t.yaxis.set_label_coords(-0.052, 0.5)
+    ax_b.yaxis.set_label_coords(-0.052, 0.5)
 
     # Bold all tick labels (must draw first to populate them)
     fig.canvas.draw()
