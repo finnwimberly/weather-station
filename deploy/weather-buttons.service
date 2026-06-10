@@ -11,7 +11,7 @@ Type=simple
 # >>> edit these two lines to match your Pi username and project path <<<
 User=fiwi42
 WorkingDirectory=/home/fiwi42/weather_station
-ExecStart=/home/fiwi42/weather_station/venv/bin/python button_handler.py
+ExecStart=/home/fiwi42/weather_station/venv/bin/python -m display.buttons
 Restart=on-failure
 RestartSec=10
 

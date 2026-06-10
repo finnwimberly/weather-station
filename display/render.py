@@ -7,10 +7,10 @@ Two display modes:
   WAVES   — 4-location grid: swell | wind | 24h tide sparkline
 
 Usage:
-    python render_display.py --mock --no-fetch --mode weather
-    python render_display.py --mock --no-fetch --mode waves
-    python render_display.py --mock --no-fetch --all
-    python render_display.py --toggle
+    python -m display.render --mock --no-fetch --mode weather
+    python -m display.render --mock --no-fetch --mode waves
+    python -m display.render --mock --no-fetch --all
+    python -m display.render --toggle
 """
 
 import argparse
@@ -275,7 +275,7 @@ def _draw_current_panel(draw, fonts, current):
 
     deg = "°"
     temp_str = fmt(current.temperature_f, deg + "F", decimal=0)
-    temp_x = px 
+    temp_x = px
     draw.text((temp_x, py), temp_str, font=fonts.hero, fill=AMBER)
     temp_w = _text_width(draw, temp_str, fonts.hero)
 
@@ -815,7 +815,7 @@ def display_to_epaper(image):
 # DUMMY DATA  (for --no-fetch layout testing)
 # =========================================================================
 def _make_dummy_buoy(station_id="44029"):
-    from fetch_buoy import BuoyReading, MetData, SpectralData
+    from fetchers.buoy import BuoyReading, MetData, SpectralData
     now     = datetime.now(timezone.utc)
     station = BUOY_STATIONS.get(station_id)
     name    = station.name if station else station_id
@@ -856,7 +856,7 @@ def _make_dummy_buoy(station_id="44029"):
 
 
 def _make_dummy_tides(station_id="8443970", station_name="Boston"):
-    from fetch_tides import TideData, TidePrediction, WaterLevel
+    from fetchers.tides import TideData, TidePrediction, WaterLevel
     now = datetime.now(timezone.utc)
 
     _variants = {
@@ -882,7 +882,7 @@ def _make_dummy_tides(station_id="8443970", station_name="Boston"):
 
 
 def _make_dummy_weather():
-    from fetch_weather import WeatherData, CurrentObservation, ForecastPeriod
+    from fetchers.weather import WeatherData, CurrentObservation, ForecastPeriod
     now = datetime.now(timezone.utc)
 
     current = CurrentObservation(
@@ -916,7 +916,7 @@ def _make_dummy_weather():
 
 
 def _make_dummy_hourly_chart():
-    from fetch_weather import HourlyChartData
+    from fetchers.weather import HourlyChartData
     now = datetime.now(_EASTERN).replace(minute=0, second=0, microsecond=0)
     times = [now + timedelta(hours=i) for i in range(120)]
 
@@ -935,7 +935,7 @@ def _make_dummy_hourly_chart():
 
 
 def _make_dummy_beach_winds():
-    from fetch_wind import BeachWind
+    from fetchers.wind import BeachWind
     now = datetime.now()
 
     _variants = {
@@ -1011,10 +1011,10 @@ def main():
     if args.no_fetch or args.all and args.no_fetch:
         buoys, weather, hourly_chart, all_tides, beach_winds = _make_all_dummy_data()
     elif not args.no_fetch:
-        from fetch_buoy    import fetch_all_buoys
-        from fetch_weather import fetch_weather, fetch_hourly_chart_data
-        from fetch_tides   import fetch_all_tides
-        from fetch_wind    import fetch_beach_winds
+        from fetchers.buoy    import fetch_all_buoys
+        from fetchers.weather import fetch_weather, fetch_hourly_chart_data
+        from fetchers.tides   import fetch_all_tides
+        from fetchers.wind    import fetch_beach_winds
         buoys       = fetch_all_buoys()
         weather     = fetch_weather()
         hourly_chart = fetch_hourly_chart_data()

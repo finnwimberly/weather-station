@@ -75,13 +75,18 @@ The reboot drops your SSH session. Wait ~30s and reconnect with the same `ssh` c
 
 ---
 
-## Phase 4 — Put the project on the Pi and build its environment
+## Phase 4 — Put the project on the Pi
 
-Get the `weather_station` folder onto the Pi. Easiest from your computer (run this in a **new** local terminal, not the SSH session), pointing at the folder on your Desktop:
+Clone from GitHub (recommended — enables auto-updates):
 
 ```bash
-# copy the whole project folder to the Pi's home directory
-scp -r ~/Desktop/weather_station fiwi42@weatherpi.local:~/
+# On the Pi: generate an SSH key and add it to GitHub
+ssh-keygen -t ed25519 -C "pi-weather-station" -f ~/.ssh/id_ed25519 -N ""
+cat ~/.ssh/id_ed25519.pub
+# → copy this output to GitHub → Settings → SSH keys → New SSH key
+
+# Then clone
+git clone git@github.com:finnwimberly/weather-station.git ~/weather_station
 ```
 
 Back in the **SSH session** on the Pi, install the system libraries that are slow to build from source, then make a virtual environment that can see them:
@@ -148,7 +153,7 @@ python main.py --render --epaper
 The four buttons are on the long edge of the Inky. Run the listener by hand first:
 
 ```bash
-python button_handler.py
+python -m display.buttons
 ```
 
 Press each button — the terminal logs which mode it set:
@@ -196,6 +201,26 @@ Both should read **active (running)**. Reboot once (`sudo reboot`) to confirm th
 
 ---
 
+## Phase 9 — Enable auto-updates from GitHub
+
+Install the timer that polls GitHub every 5 minutes and restarts the display service if new code is found:
+
+```bash
+chmod +x ~/weather_station/deploy/auto-update.sh
+
+# allow passwordless restart of the weather-station service
+echo "fiwi42 ALL=(ALL) NOPASSWD: /bin/systemctl restart weather-station" | sudo tee /etc/sudoers.d/weather-station-update
+
+sudo cp ~/weather_station/deploy/auto-update.service /etc/systemd/system/
+sudo cp ~/weather_station/deploy/auto-update.timer /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable --now auto-update.timer
+```
+
+After this, pushing to GitHub on your Mac deploys to the Pi automatically within 5 minutes. Check `~/weather_station/update.log` to see what was pulled.
+
+---
+
 ## Troubleshooting
 
 **Display stays blank / "auto detection failed."** SPI or I2C isn't on. Re-run the Phase 3 `raspi-config` commands and reboot. Confirm with `ls /dev/spidev*`.
@@ -204,7 +229,7 @@ Both should read **active (running)**. Reboot once (`sudo reboot`) to confirm th
 
 **Buttons do nothing.** Check the listener service: `systemctl status weather-buttons.service`. If it errored on `gpiod`, run `pip install gpiod gpiodevice` inside the venv. Also confirm `gpioinfo` runs without error.
 
-**Colors look washed out.** Adjust `saturation` in `render_display.py`'s `display_to_epaper` (currently `0.7`; try `0.6`–`0.9`).
+**Colors look washed out.** Adjust `saturation` in `display/render.py`'s `display_to_epaper` (currently `1.0`; try `0.7`–`0.9`).
 
 **Everything is slow.** It's a Pi 3 and ACeP e‑paper — refreshes of 30–40s are normal. Data refreshes on a 30‑minute timer, so this isn't a live feed.
 

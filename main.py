@@ -27,11 +27,11 @@ from config import (
     BEACHES,
     BUOY_REFRESH,
 )
-from fetch_buoy import fetch_all_buoys, print_buoy_summary
-from fetch_weather import fetch_weather, fetch_hourly_chart_data, print_weather_summary
-from fetch_tides import fetch_all_tides, print_tide_summary
-from fetch_wind import fetch_beach_winds, print_beach_wind_summary
-from render_display import (
+from fetchers.buoy import fetch_all_buoys, print_buoy_summary
+from fetchers.weather import fetch_weather, fetch_hourly_chart_data, print_weather_summary
+from fetchers.tides import fetch_all_tides, print_tide_summary
+from fetchers.wind import fetch_beach_winds, print_beach_wind_summary
+from display.render import (
     DisplayState,
     render_display,
     render_weather_mode,

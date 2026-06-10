@@ -12,7 +12,7 @@ Button mapping (top to bottom):
     C -> Forecast mode
     D -> Next wave screen (advance buoy/beach rotation)
 
-Run standalone for testing:  python button_handler.py
+Run standalone for testing:  python -m display.buttons
 On the Pi it normally runs as the weather-buttons.service systemd unit.
 """
 
@@ -22,7 +22,7 @@ import gpiod
 import gpiodevice
 from gpiod.line import Bias, Direction, Edge
 
-from render_display import DisplayState
+from display.render import DisplayState
 
 logging.basicConfig(
     level=logging.INFO,
