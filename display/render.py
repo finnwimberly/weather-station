@@ -60,9 +60,9 @@ STATUS_BAR      = (0,   0,   WIDTH, 26)
 BOTTOM_BAR      = (0,   454, WIDTH, HEIGHT)
 
 # Weather display panels
-WEATHER_CURRENT = (0,   26,  400, 215)
-WEATHER_TODAY   = (400, 26,  800, 215)
-WEATHER_CHART   = (0,   215, 800, 454)
+WEATHER_CURRENT = (0,   26,  400, 196)
+WEATHER_TODAY   = (400, 26,  800, 196)
+WEATHER_CHART   = (0,   196, 800, 454)
 
 # Waves grid geometry
 WAVES_Y0    = 26            # below status bar
@@ -364,14 +364,14 @@ def _draw_weather_chart(draw, img, hourly_data, fonts):
                   "Hourly chart unavailable", font=fonts.body, fill=DIM)
         return
 
-    # ── Build paired arrays, clipping to first 48 h ──────────────────────
+    # ── Build paired arrays, clipping to first 72 h (3 days) ────────────
     data_list = list(zip(
         hourly_data.times,
         hourly_data.temperature_f,
         hourly_data.precip_pct,
         hourly_data.cloud_cover_pct,
         hourly_data.pressure_inhg,
-    ))[:120]
+    ))[:72]
     if not data_list:
         return
 
@@ -389,8 +389,8 @@ def _draw_weather_chart(draw, img, hourly_data, fonts):
     gs = gridspec.GridSpec(
         2, 1, figure=fig,
         height_ratios=[0.55, 0.45],
-        hspace=0.18,
-        left=0.055, right=0.935, top=0.97, bottom=0.16,
+        hspace=0.20,
+        left=0.060, right=0.925, top=0.97, bottom=0.26,
     )
 
     # ── Top: Temperature ─────────────────────────────────────────────────
@@ -402,8 +402,8 @@ def _draw_weather_chart(draw, img, hourly_data, fonts):
     t_min, t_max = min(temps), max(temps)
     pad = max((t_max - t_min) * 0.18, 3.0)
     ax_t.set_ylim(t_min - pad, t_max + pad)
-    ax_t.set_ylabel("°F", fontsize=7, fontweight="bold", labelpad=2)
-    ax_t.tick_params(axis="y", labelsize=7, pad=1, length=2)
+    ax_t.set_ylabel("°F", fontsize=9, fontweight="bold", labelpad=2)
+    ax_t.tick_params(axis="y", labelsize=9, pad=1, length=2)
     ax_t.tick_params(axis="x", bottom=False, labelbottom=False)
     ax_t.spines["top"].set_visible(False)
     ax_t.spines["right"].set_visible(False)
@@ -416,8 +416,8 @@ def _draw_weather_chart(draw, img, hourly_data, fonts):
     ax_b.fill_between(t_nums, precips, 0, color=c_navy, alpha=1.0, label="Precip %")
     ax_b.set_ylim(0, 108)
     ax_b.set_xlim(t_nums[0], t_nums[-1])
-    ax_b.set_ylabel("%", fontsize=7, fontweight="bold", labelpad=2)
-    ax_b.tick_params(axis="y", labelsize=7, pad=1, length=2)
+    ax_b.set_ylabel("%", fontsize=9, fontweight="bold", labelpad=2)
+    ax_b.tick_params(axis="y", labelsize=9, pad=1, length=2)
     ax_b.axvline(now_num, color=c_amber, linewidth=1.5, linestyle="--", alpha=0.7)
 
     # Pressure on right y-axis
@@ -428,25 +428,30 @@ def _draw_weather_chart(draw, img, hourly_data, fonts):
         spread = max(max(p_vals) - min(p_vals), 0.2)
         ax_p.set_ylim(min(p_vals) - spread * 0.4,
                       max(p_vals) + spread * 0.4)
-    ax_p.set_ylabel("inHg", fontsize=6, labelpad=2)
-    ax_p.tick_params(axis="y", labelsize=6, pad=1, length=2)
+    ax_p.set_ylabel("inHg", fontsize=8, labelpad=2)
+    ax_p.tick_params(axis="y", labelsize=8, pad=1, length=2)
     ax_p.spines["top"].set_visible(False)
 
-    # X-axis time labels on bottom subplot — day boundaries for 5-day span
+    # X-axis time labels — day boundaries for 3-day span, 12h minor ticks
     ax_b.xaxis.set_major_locator(mdates.DayLocator(tz=_EASTERN))
     ax_b.xaxis.set_major_formatter(mdates.DateFormatter("%a %-m/%-d", tz=_EASTERN))
-    ax_b.tick_params(axis="x", labelsize=7, pad=1, length=2)
+    ax_b.xaxis.set_minor_locator(mdates.HourLocator(byhour=[6, 12, 18], tz=_EASTERN))
+    ax_b.tick_params(axis="x", which="major", labelsize=9, pad=2, length=3)
+    ax_b.tick_params(axis="x", which="minor", length=2)
     ax_b.spines["top"].set_visible(False)
 
-    # Legend (compact, bottom-left corner)
+    # Legend centered below second timeseries
     from matplotlib.patches import Patch
     legend_elems = [
-        Patch(facecolor=c_cloud, label="Cloud"),
-        Patch(facecolor=c_navy, label="Precip"),
+        Patch(facecolor=c_cloud, label="Cloud Cover"),
+        Patch(facecolor=c_navy, label="Precip %"),
         Line2D([0], [0], color="black", linewidth=1.5, label="Pressure"),
     ]
-    ax_b.legend(handles=legend_elems, fontsize=6, loc="upper left",
-                framealpha=0.85, ncol=3, borderpad=0.3, handlelength=1.2)
+    ax_b.legend(handles=legend_elems, fontsize=8,
+                loc="upper center", bbox_to_anchor=(0.5, -0.40),
+                framealpha=0.85, ncol=3,
+                borderpad=0.5, handlelength=1.8,
+                handletextpad=0.5, columnspacing=1.5)
 
     buf = BytesIO()
     fig.savefig(buf, format="png", dpi=dpi, bbox_inches=None)
