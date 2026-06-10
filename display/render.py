@@ -51,7 +51,7 @@ BG    = (255, 255, 255)   # white canvas
 INK   = (  0,   0,   0)   # primary text / lines
 NAVY  = ( 15,  55, 120)   # status bar fill / wave data
 IVORY = (255, 255, 255)   # text on dark backgrounds
-AMBER = (210,  85,   0)   # hero numbers (wave ht, temperature)
+AMBER = (200,   0,   0)   # hero numbers (wave ht, temperature)
 RULE  = (  0,   0,   0)   # divider lines
 DIM   = (  0,   0,   0)   # secondary text
 
@@ -377,10 +377,9 @@ def _draw_weather_chart(draw, img, hourly_data, fonts):
 
     times_dt, temps, precips, clouds, pressures = zip(*data_list)
     t_nums  = mdates.date2num(list(times_dt))
-    now_num = float(mdates.date2num(datetime.now(_EASTERN)))
 
     # ── ACeP-safe colours ────────────────────────────────────────────────
-    c_amber = (210/255, 85/255,  0/255)
+    c_amber = (200/255,  0/255,  0/255)
     c_navy  = (15/255,  55/255, 120/255)
     c_cloud = (160/255, 200/255, 240/255)   # light blue → dithers as sparse blue
 
@@ -390,14 +389,13 @@ def _draw_weather_chart(draw, img, hourly_data, fonts):
         2, 1, figure=fig,
         height_ratios=[0.55, 0.45],
         hspace=0.20,
-        left=0.060, right=0.925, top=0.97, bottom=0.26,
+        left=0.075, right=0.905, top=0.97, bottom=0.26,
     )
 
     # ── Top: Temperature ─────────────────────────────────────────────────
     ax_t = fig.add_subplot(gs[0])
     ax_t.set_facecolor("white")
     ax_t.plot(t_nums, temps, color=c_amber, linewidth=2.2, solid_capstyle="round")
-    ax_t.axvline(now_num, color=c_amber, linewidth=1.5, linestyle="--", alpha=0.7)
     ax_t.set_xlim(t_nums[0], t_nums[-1])
     t_min, t_max = min(temps), max(temps)
     pad = max((t_max - t_min) * 0.18, 3.0)
@@ -418,8 +416,6 @@ def _draw_weather_chart(draw, img, hourly_data, fonts):
     ax_b.set_xlim(t_nums[0], t_nums[-1])
     ax_b.set_ylabel("%", fontsize=9, fontweight="bold", labelpad=2)
     ax_b.tick_params(axis="y", labelsize=9, pad=1, length=2)
-    ax_b.axvline(now_num, color=c_amber, linewidth=1.5, linestyle="--", alpha=0.7)
-
     # Pressure on right y-axis
     ax_p = ax_b.twinx()
     ax_p.plot(t_nums, pressures, color="black", linewidth=1.8)
@@ -447,11 +443,20 @@ def _draw_weather_chart(draw, img, hourly_data, fonts):
         Patch(facecolor=c_navy, label="Precip %"),
         Line2D([0], [0], color="black", linewidth=1.5, label="Pressure"),
     ]
-    ax_b.legend(handles=legend_elems, fontsize=8,
+    from matplotlib.font_manager import FontProperties
+    ax_b.legend(handles=legend_elems,
+                prop=FontProperties(size=9, weight="bold"),
                 loc="upper center", bbox_to_anchor=(0.5, -0.40),
                 framealpha=0.85, ncol=3,
                 borderpad=0.5, handlelength=1.8,
                 handletextpad=0.5, columnspacing=1.5)
+
+    # Bold all tick labels (must draw first to populate them)
+    fig.canvas.draw()
+    for ax_obj in [ax_t, ax_b, ax_p]:
+        for lbl in ax_obj.get_xticklabels() + ax_obj.get_yticklabels():
+            lbl.set_fontweight("bold")
+            lbl.set_fontsize(10)
 
     buf = BytesIO()
     fig.savefig(buf, format="png", dpi=dpi, bbox_inches=None)
