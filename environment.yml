@@ -1,0 +1,14 @@
+name: weather_station
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.11
+  - pip
+  - requests>=2.28
+  - pillow>=10.0
+  - matplotlib>=3.7
+  - cartopy>=0.22
+  - scipy>=1.11
+  # - pip:
+  #   - inky[rpi,fonts]>=2.0.0

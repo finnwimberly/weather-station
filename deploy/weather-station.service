@@ -1,0 +1,22 @@
+# weather-station.service
+# runs the main display loop and pushes to the inky impression on boot.
+# install: see SETUP.md (copy to /etc/systemd/system/, edit User/paths, enable).
+
+[Unit]
+Description=Weather & Wave e-paper display loop
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+# >>> edit these two lines to match your Pi username and project path <<<
+User=fiwi42
+WorkingDirectory=/home/fiwi42/weather_station
+# use the project's virtualenv python; --epaper sends output to the display
+ExecStart=/home/fiwi42/weather_station/venv/bin/python main.py --loop --epaper
+Environment=PROJ_DATA=/usr/share/proj
+Restart=on-failure
+RestartSec=30
+
+[Install]
+WantedBy=multi-user.target

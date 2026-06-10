@@ -1,0 +1,7 @@
+[Unit]
+Description=Weather station auto-update from GitHub
+
+[Service]
+Type=oneshot
+User=fiwi42
+ExecStart=/home/fiwi42/weather_station/deploy/auto-update.sh

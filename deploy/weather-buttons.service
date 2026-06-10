@@ -1,0 +1,19 @@
+# weather-buttons.service
+# listens for the inky's 4 buttons and updates the display-state file.
+# install: see SETUP.md (copy to /etc/systemd/system/, edit User/paths, enable).
+
+[Unit]
+Description=Weather station button listener
+After=weather-station.service
+
+[Service]
+Type=simple
+# >>> edit these two lines to match your Pi username and project path <<<
+User=fiwi42
+WorkingDirectory=/home/fiwi42/weather_station
+ExecStart=/home/fiwi42/weather_station/venv/bin/python button_handler.py
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

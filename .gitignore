@@ -1,0 +1,16 @@
+# project-generated
+.memory/
+output/
+.display_state.json
+update.log
+
+# python
+__pycache__/
+*.pyc
+*.pyo
+venv/
+.env
+
+# os / editor
+.DS_Store
+.claude/
